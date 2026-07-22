@@ -1,0 +1,1 @@
+from Alice.core.plugin import *

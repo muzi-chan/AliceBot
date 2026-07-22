@@ -1,0 +1,9 @@
+[base]
+fastapi[standard]
+pydantic
+
+[linux]
+uvloop
+
+[windows]
+winloop
