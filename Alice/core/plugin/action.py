@@ -4,7 +4,6 @@ from typing import NoReturn, Optional, TYPE_CHECKING
 from Alice.core.plugin.condition import Condition
 from Alice.exception import ActionDone, RequireExplicitParam
 from Alice.onebot.api import API
-from Alice.onebot.api._model import SendMessage
 from Alice.onebot.event._event import MessageEvent
 from Alice.onebot.message import MessageSegment, MessageLike
 
@@ -13,6 +12,7 @@ if TYPE_CHECKING:
     from Alice.core.bot.bot import AliceBot
     from Alice.core.plugin.trigger import Trigger, TriggerRecord
     from Alice.core.plugin.worker import Tick
+    from Alice.onebot.api._model import SendMessage, StoredMessage
 
 
 class Action:
@@ -97,6 +97,12 @@ class Action:
             return
         finally:
             trigger.remove()
+
+    async def get_reply(self, event: MessageEvent) -> Optional[AliceBotAPIResponse[StoredMessage]]:
+        if event.reply_id is None:
+            return
+        call = API.get_msg(message_id=event.reply_id)
+        return await call(event.bot)
 
 
 __all__ = [

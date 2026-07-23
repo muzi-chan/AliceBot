@@ -1,19 +1,18 @@
 from asyncio import AbstractEventLoop, Queue, get_running_loop, sleep
 from collections import deque
-
 from time import monotonic
-from typing import Any, TYPE_CHECKING, Optional
+from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
 
-from Alice.core.event import AliceBotEvent
+from Alice.core.event import AliceEvent, AliceBotEvent
 
 if TYPE_CHECKING:
     from Alice.core.bot.bot import AliceBot
     from Alice.core.core import AliceCore
-    from Alice.core.event import AliceEvent
     from Alice.core.plugin.trigger import Trigger, TriggerGroup
 
 
-class Tick:
+TE = TypeVar('TE', bound=AliceEvent, default=AliceEvent)
+class Tick(Generic[TE]):
     '''# 工作帧'''
     __slots__ = (
         '_started', '_starting_time', '_finished_time', '_block_triggers', '_ordinal_triggers',
@@ -31,7 +30,7 @@ class Tick:
     '''## 事件循环'''
     bot: Optional[AliceBot]
     '''## 事件'''
-    event: AliceEvent
+    event: TE
     '''## 事件'''
     extra: dict[Any, Any]
     '''## 额外信息'''
@@ -50,7 +49,7 @@ class Tick:
     block_trigger: Optional[Trigger]
     '''## 触发阻塞的触发器'''
     
-    def __init__(self, worker: Worker, loop: AbstractEventLoop, bot: Optional[AliceBot], event: AliceEvent, trigger_group: TriggerGroup) -> None:
+    def __init__(self, worker: Worker, loop: AbstractEventLoop, bot: Optional[AliceBot], event: TE, trigger_group: TriggerGroup) -> None:
         self._started = False
         self._starting_time = None
         self._finished_time = None
@@ -68,7 +67,7 @@ class Tick:
         self.processing_triggers = dict()
         self.block_trigger = None
     
-    async def __call__(self) -> Any:
+    async def __call__(self: Tick) -> Any:
         assert self._started == False
         self._started = True
         self._starting_time = monotonic()

@@ -1,3 +1,4 @@
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional
 
@@ -639,6 +640,28 @@ class StoredMessage(AliceBotAPIModel):
     @field_validator('message', mode='before')
     def _(cls, data: Any) -> Message:
         return Message(data)
+
+    # 拓展
+    @cached_property
+    def at_ids(self) -> list[int]:
+        '''## 所有艾特对象'''
+        return [int(segment.data['qq']) for segment in self.message.segments if segment.type == 'at']
+
+    @cached_property
+    def at_me(self) -> bool:
+        '''## 机器人是否被艾特'''
+        return False
+    
+    @cached_property
+    def reply_id(self) -> Optional[int]:
+        '''## 被回复消息 ID'''
+        if self.message.array and (segment := self.message.segments[0]).type == 'reply':
+            return segment.data.get('id')
+    
+    @cached_property
+    def pure_text(self) -> str:
+        '''## 纯文本消息'''
+        return ''.join([segment.data['text'] for segment in self.message.segments if segment.type == 'text'])
 
 
 class OnlineClients(AliceBotAPIModel):

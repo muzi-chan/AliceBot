@@ -1,25 +1,25 @@
 from typing import Any, Awaitable, Callable, Generic, Optional, TypeVar, Union, TYPE_CHECKING
 
 from Alice.core.plugin.condition import Condition, ConditionGroup
+from Alice.core.plugin.worker import Tick, TE
 
 if TYPE_CHECKING:
     from Alice.core.plugin.action import Action
     from Alice.core.plugin.condition import Condition
     from Alice.core.plugin.trigger import Trigger, TriggerRecord
-    from Alice.core.plugin.worker import Tick
 
 
 TR = TypeVar('TR', bound='TriggerRecord', default='TriggerRecord')
-HandlerCallable = Callable[['Action', 'Tick', TR], Awaitable[Any]]
+HandlerCallable = Callable[['Action', Tick[TE], TR], Awaitable[Any]]
 
 
-class Handler(Generic[TR]):
+class Handler(Generic[TE, TR]):
     '''# 处理流程对象'''
     __slots__ = ('_priority', '_trigger', 'func', 'desc', 'condition', 'ignore_exception')
     
     _priority: int
     _trigger: Trigger
-    func: HandlerCallable[TR]
+    func: HandlerCallable[TE, TR]
     '''## 事件处理函数'''
     desc: str
     '''## 描述'''
@@ -27,7 +27,7 @@ class Handler(Generic[TR]):
     '''## 条件组'''
     ignore_exception: bool
     
-    def __init__(self, func: HandlerCallable[TR], desc: Optional[str], condition: Optional[Union[Condition, ConditionGroup]], trigger: Trigger, priority: int = 100, ignore_exception: bool = False) -> None:
+    def __init__(self, func: HandlerCallable[TE, TR], desc: Optional[str], condition: Optional[Union[Condition, ConditionGroup]], trigger: Trigger, priority: int = 100, ignore_exception: bool = False) -> None:
         self._priority = priority
         self._trigger = trigger
         self.func = func
@@ -63,7 +63,7 @@ class Handler(Generic[TR]):
     async def __call__(self, action: Action, tick: Tick, record: TR) -> Any:
         if self.condition is not None and not await self.condition(action, tick, record):
             return
-        await self.func(action, tick, record)
+        await self.func(action, tick, record) # type: ignore
 
 
 __all__ = [

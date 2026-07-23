@@ -70,7 +70,7 @@ async def _bot_is_group_owner(action: Action, tick: Tick, record: TriggerRecord)
         return False
     bot = event.bot
     group_id = getattr(event, 'group_id', None)
-    return group_id is not None and bot.account in bot.data.owned_groups
+    return group_id is not None and group_id in bot.data.owned_groups
 
 async def _bot_is_group_admin(action: Action, tick: Tick, record: TriggerRecord) -> bool:
     event = tick.event
@@ -78,7 +78,7 @@ async def _bot_is_group_admin(action: Action, tick: Tick, record: TriggerRecord)
         return False
     bot = event.bot
     group_id = getattr(event, 'group_id', None)
-    return group_id is not None and bot.account in bot.data.admin_groups
+    return group_id is not None and group_id in bot.data.admin_groups
 
 async def _bot_is_group_owner_or_admin(action: Action, tick: Tick, record: TriggerRecord) -> bool:
     event = tick.event
@@ -86,7 +86,7 @@ async def _bot_is_group_owner_or_admin(action: Action, tick: Tick, record: Trigg
         return False
     bot = event.bot
     group_id = getattr(event, 'group_id', None)
-    return group_id is not None and (bot.account in bot.data.admin_groups or bot.account in bot.data.admin_groups)
+    return group_id is not None and (group_id in bot.data.admin_groups or group_id in bot.data.admin_groups)
 
 
 ROLE_FRIEND                        = Condition(_friend, '来自好友', ConditionType.ROLE, 'is_friend')

@@ -9,7 +9,7 @@ from Alice.exception import ActionDone, RequireExplicitParam
 
 if TYPE_CHECKING:
     from Alice.core.plugin.plugin import Plugin
-    from Alice.core.plugin.worker import Tick
+    from Alice.core.plugin.worker import Tick, TE
 
 
 @dataclass(repr=False, eq=False, slots=True)
@@ -26,7 +26,7 @@ class TriggerRecord:
     trigger: Trigger
     
     def __init__(self, trigger: Trigger) -> None:
-        self.__data__ = dict()
+        super().__setattr__('__data__', dict())
         self.trigger = trigger
     
     @property
@@ -205,7 +205,7 @@ class Trigger:
             raise
     
     @overload
-    def handle(self, func: HandlerCallable[TR]) -> Handler:
+    def handle(self, func: HandlerCallable[TE, TR]) -> Handler:
         '''## 添加事件处理流程装饰器'''
     
     @overload
@@ -222,7 +222,7 @@ class Trigger:
         '''
     
     @overload
-    def handle(self, *, func: HandlerCallable[TR], desc: Optional[str] = None, condition: Optional[Union[Condition, ConditionGroup]] = None, priority: int = 100, ignore_exception: bool = False) ->  Handler:
+    def handle(self, *, func: HandlerCallable[TE, TR], desc: Optional[str] = None, condition: Optional[Union[Condition, ConditionGroup]] = None, priority: int = 100, ignore_exception: bool = False) ->  Handler:
         '''
         ## 添加事件处理流程
         
@@ -235,7 +235,7 @@ class Trigger:
         * ignore_exception: 忽略异常
         '''
     
-    def handle(self, func: Optional[HandlerCallable[TR]] = None, desc: Optional[str] = None, condition: Optional[Union[Condition, ConditionGroup]] = None, priority: int = 100, ignore_exception: bool = False) -> Union[Callable[..., Handler], Handler]:
+    def handle(self, func: Optional[HandlerCallable[TE, TR]] = None, desc: Optional[str] = None, condition: Optional[Union[Condition, ConditionGroup]] = None, priority: int = 100, ignore_exception: bool = False) -> Union[Callable[..., Handler], Handler]:
         def wrap(func: HandlerCallable) -> Handler:
             handler = Handler(func, desc, condition, self, priority, ignore_exception)
             self.handlers.append(handler)
