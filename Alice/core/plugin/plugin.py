@@ -11,6 +11,7 @@ from Alice.core.plugin.models import PluginMetadata, PluginConfig, PluginStatus,
 from Alice.core.plugin.utils import get_core
 from Alice.core.plugin.virtual import VIRTUAL_EXPORT_PREFIX, VIRTUAL_PLUGIN_PREFIX
 from Alice.core.thread.thread import AliceThread
+from Alice.exception import PluginCircularDependency
 from Alice.log import logger
 
 
@@ -129,7 +130,7 @@ class Plugin(Generic[PC, PS]):
         detected = core.plugin_manager.detected
         load_chain = _load_chain or list()
         if self in load_chain:
-            raise
+            raise PluginCircularDependency()
         load_chain.append(self) # type: ignore
         # 导入依赖项
         dependencies = self.metadata.dependencies or list()

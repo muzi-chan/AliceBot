@@ -1,13 +1,14 @@
 from enum import IntEnum
 
-from typing import Any, Iterable, Optional, Union, TYPE_CHECKING
+from typing import Any, Awaitable, Callable, Iterable, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from Alice.core.plugin.action import Action
-    from Alice.core.plugin.handler import HandlerCallable
     from Alice.core.plugin.trigger import TriggerRecord, TR
     from Alice.core.plugin.worker import Tick
 
+
+ConditionCallable = Callable[['Action', 'Tick', 'TR'], Awaitable[Any]]
 
 class ConditionType(IntEnum):
     OTHER = 0
@@ -21,13 +22,13 @@ class Condition:
     '''# 条件'''
     __slots__ = ('func', 'type', 'desc', 'ident', '_invert')
     
-    func: HandlerCallable
+    func: ConditionCallable
     desc: str
     type: ConditionType
     ident: str
     _invert: bool
     
-    def __init__(self, func: HandlerCallable[TR], desc: str, type: ConditionType = ConditionType.OTHER, ident: Optional[str] = None, invert: bool = False) -> None:
+    def __init__(self, func: ConditionCallable[TR], desc: str, type: ConditionType = ConditionType.OTHER, ident: Optional[str] = None, invert: bool = False) -> None:
         self._invert = invert
         self.func = func # type: ignore
         self.type = type

@@ -1,12 +1,5 @@
-
-
-
 class AliceException(Exception):
     '''# Alice统一异常类'''
-
-
-class ExistAliceCore(AliceException):
-    '''# 已存在Alice核心实例'''
 
 
 class ActionDone(AliceException):
@@ -27,6 +20,19 @@ class APINotImplemented(APICallingFailed):
 
 class APIBotNotConnected(APICallingFailed):
     '''# 调用API时所属机器人未连接'''
+
+
+class ExistAliceCore(AliceException):
+    '''# 已存在Alice核心实例'''
+
+
+class PluginCircularDependency(AliceException):
+    '''# 插件循环依赖'''
+
+
+class RequireExplicitParam(AliceException):
+    '''# 需要显式输入的参数'''
+    
 
 
 __all__ = [

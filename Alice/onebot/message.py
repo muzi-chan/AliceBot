@@ -74,7 +74,7 @@ class MessageSegment:
         
         ---
         ### 参数
-        * id: QQ 表情 ID [ID表](https://github.com/richardchien/coolq-http-api/wiki/%E8%A1%A8%E6%83%85-CQ-%E7%A0%81-ID-%E8%A1%A8)
+        * id: QQ 表情 ID
         '''
         return MessageSegment('face', {'id': id})
     

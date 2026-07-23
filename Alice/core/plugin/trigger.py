@@ -5,7 +5,7 @@ from Alice.core.plugin.action import Action
 from Alice.core.plugin.condition import Condition, ConditionGroup
 from Alice.core.plugin.handler import Handler, HandlerCallable, TR
 from Alice.core.plugin.utils import current_plugin, get_core, get_plugin_from_frame
-from Alice.exception import ActionDone
+from Alice.exception import ActionDone, RequireExplicitParam
 
 if TYPE_CHECKING:
     from Alice.core.plugin.plugin import Plugin
@@ -87,7 +87,8 @@ class Trigger:
         self.name = name or str(self.ident)
         self.desc = desc or ''
         plugin = current_plugin() or get_plugin_from_frame() if plugin is None else plugin
-        assert plugin is not None, '请显式的设置plugin'
+        if plugin is None:
+            raise RequireExplicitParam('plugin')
         self.plugin = plugin
         if isinstance(condition, ConditionGroup):
             self.condition = ConditionGroup() + condition
@@ -106,8 +107,8 @@ class Trigger:
         if tick.block_trigger is not None:
             tick.unused_triggers.setdefault(tid, self)
             return
-        action = Action(tick)
-        record = TriggerRecord(trigger=self)
+        action = Action(tick, self)
+        record = TriggerRecord(self)
         try:
             if self.condition is not None and not await self.condition(action, tick, record):
                 tick.unused_triggers.setdefault(tid, self)
