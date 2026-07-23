@@ -3,7 +3,6 @@ from Alice.onebot.event import Event
 from Alice.onebot.event._event import GroupMessageEvent
 
 
-
 async def _friend(action: Action, tick: Tick, record: TriggerRecord) -> bool:
     event = tick.event
     if not isinstance(event, Event):

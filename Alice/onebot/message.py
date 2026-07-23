@@ -115,7 +115,7 @@ class MessageSegment:
         ---
         ### 参数
         * file: 语音文件
-            - 绝对路径 [格式使用](https://tools.ietf.org/html/rfc8089)
+            - 绝对路径
             - 网络 URL
             - Base64 编码
             - Path
@@ -138,7 +138,7 @@ class MessageSegment:
         ---
         ### 参数
         * file: 视频文件
-            - 绝对路径 [格式使用](https://tools.ietf.org/html/rfc8089)
+            - 绝对路径
             - 网络 URL
             - Base64 编码
             - Path
@@ -185,7 +185,7 @@ class MessageSegment:
         
         ---
         ### 参数
-        * type: 音乐平台[需要Onebot实现支持]
+        * type: 音乐平台
             - qq
             - 163
             - xm

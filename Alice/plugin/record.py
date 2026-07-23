@@ -10,5 +10,6 @@ class CommandRecord(TriggerRecord):
 
 
 class RegexRecord(TriggerRecord):
+    '''## 正则触发器触发时捕获数据'''
     matched: Match[str]
 

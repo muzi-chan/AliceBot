@@ -1,0 +1,3 @@
+[submodule "Alice/onebot"]
+	path = Alice/onebot
+	url = https://github.com/muzi-chan/AliceBot-onebot.git

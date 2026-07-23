@@ -35,3 +35,7 @@ def Regex(pattern: str, flags: RegexFlag = RegexFlag.S, desc: Optional[str] = No
     return Condition(condition, desc or f'regex_{pattern}', ConditionType.TEXT)
 
 
+__all__ = [
+    'Command',
+    'Regex',
+]
