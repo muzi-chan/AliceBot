@@ -4,6 +4,7 @@ from time import monotonic
 from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
 
 from Alice.core.event import AliceEvent, AliceBotEvent
+from Alice.log import logger
 
 if TYPE_CHECKING:
     from Alice.core.bot.bot import AliceBot
@@ -15,15 +16,14 @@ TE = TypeVar('TE', bound=AliceEvent, default=AliceEvent)
 class Tick(Generic[TE]):
     '''# 工作帧'''
     __slots__ = (
-        '_started', '_starting_time', '_finished_time', '_block_triggers', '_ordinal_triggers',
+        '_started', '_starting_time', '_finished_time', '_trigger_group',
         'worker', 'loop', 'bot', 'event', 'extra', 'cached_condition',
-        'error_triggers', 'unused_triggers', 'success_triggers', 'processing_triggers', 'block_trigger'
+        'error_triggers', 'unused_triggers', 'success_triggers', 'block_trigger'
     )
     _started: bool
     _starting_time: Optional[float]
     _finished_time: Optional[float]
-    _block_triggers: list[Trigger]
-    _ordinal_triggers: list[Trigger]
+    _trigger_group: TriggerGroup
     worker: Worker
     '''## 所属工作者'''
     loop: AbstractEventLoop
@@ -44,8 +44,6 @@ class Tick(Generic[TE]):
     '''## 未被触发的触发器'''
     success_triggers: dict[int, Trigger]
     '''## 成功结束的触发器'''
-    processing_triggers: dict[int, Trigger]
-    '''## 正在处理的触发器'''
     block_trigger: Optional[Trigger]
     '''## 触发阻塞的触发器'''
     
@@ -53,8 +51,7 @@ class Tick(Generic[TE]):
         self._started = False
         self._starting_time = None
         self._finished_time = None
-        self._block_triggers = trigger_group.block
-        self._ordinal_triggers = trigger_group.ordinal
+        self._trigger_group = trigger_group
         self.worker = worker
         self.loop = loop
         self.bot = bot
@@ -64,16 +61,15 @@ class Tick(Generic[TE]):
         self.error_triggers = dict()
         self.unused_triggers = dict()
         self.success_triggers = dict()
-        self.processing_triggers = dict()
         self.block_trigger = None
     
     async def __call__(self: Tick) -> Any:
         assert self._started == False
         self._started = True
         self._starting_time = monotonic()
-        for trigger in self._block_triggers:
+        for trigger in self._trigger_group.block:
             await trigger(self)
-        for trigger in self._ordinal_triggers:
+        for trigger in self._trigger_group.ordinal:
             await trigger(self)
         self._finished_time = monotonic()
         
@@ -122,7 +118,10 @@ class Worker:
         self._tick_queue.put_nowait(tick)
 
     async def _tick(self, tick: Tick) -> None:
-        await tick()
+        try:
+            await tick()
+        except:
+            logger.error('当前帧发生错误.')
         cost = tick.cost_time
         self._tick_costs.append(cost)
         self._tick_times.append(monotonic())

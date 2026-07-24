@@ -8,7 +8,7 @@ def get_subclass[T](cls: Union[type[T], list[type[T]]]) -> list[type[T]]:
     elif subcls := cls.__subclasses__():
         return get_subclass(subcls) + [cls]
     return [cls]
-    
+
 
 __all__ = [
     'get_subclass',

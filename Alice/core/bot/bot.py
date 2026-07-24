@@ -49,7 +49,7 @@ class AliceBotGroup:
 
 class AliceBotData:
     '''# Alice机器人账号数据类'''
-    __slots__ = ('_bot', '_last_update_time', '_admin_groups', '_owned_groups', '_groups', '_friends', '_path')
+    __slots__ = ('_bot', '_last_update_time', '_admin_groups', '_owned_groups', '_groups', '_friends', '_path', 'nicknames', 'superusers')
     
     _bot: AliceBot
     _last_update_time: float
@@ -58,6 +58,8 @@ class AliceBotData:
     _groups: dict[int, AliceBotGroup]
     _friends: dict[int, AliceBotFeiend]
     _path: Path
+    nicknames: list[str]
+    superusers: list[int]
     
     def __init__(self, bot: AliceBot) -> None:
         from Alice.plugin import get_core
@@ -69,6 +71,8 @@ class AliceBotData:
         self._groups = dict()
         self._friends = dict()
         self._path = get_core().path.bots / f'{self._bot.account}'
+        self.nicknames = list()
+        self.superusers = list()
     
     @property
     def last_update_time(self) -> float:
@@ -101,8 +105,10 @@ class AliceBotData:
         try:
             raw_data = data_path.read_text(encoding='UTF-8')
             data: dict[str, Any] = json.loads(raw_data)
-            groups: list[dict[str, Any]] = data['groups']
-            friends: list[dict[str, Any]] = data['friends']
+            groups: list[dict[str, Any]] = data.get('groups', list())
+            friends: list[dict[str, Any]] = data.get('friends', list())
+            nicknames: list[str] = data.get('nicknames', list())
+            superusers: list[int] = data.get('superusers', list())
             last_update_time = data['last_update_time']
             if self._last_update_time > last_update_time:
                 return
@@ -111,6 +117,8 @@ class AliceBotData:
             self._owned_groups = data['owned_groups']
             self._groups = {group['group_id']: AliceBotGroup(**group) for group in groups}
             self._friends = {friend['user_id']: AliceBotFeiend(**friend) for friend in friends}
+            self.nicknames = nicknames
+            self.superusers = superusers
         except:
             logger.error(f'加载[{self._bot.account}]数据失败')
     
@@ -126,6 +134,8 @@ class AliceBotData:
                 'owned_groups': self.owned_groups,
                 'groups': groups,
                 'friends': friends,
+                'nicknames': self.nicknames,
+                'superusers': self.superusers,
             }
             (self._path / 'data.json').write_text(json.dumps(data, ensure_ascii=False, indent=4), encoding='UTF-8')
         except:
@@ -190,6 +200,10 @@ class AliceBot:
             '''## 好友列表'''
             path: Path
             '''## 数据目录'''
+            nicknames: list[str]
+            '''## 昵称'''
+            superusers: list[int]
+            '''## 超级用户'''
             @staticmethod
             def load() -> None:
                 '''## 加载数据'''
@@ -201,8 +215,8 @@ class AliceBot:
                 '''## 更新数据'''
     
     def __init__(self, account: int) -> None:
-        self.account = account
         self._server = None
+        self.account = account
         self.data = AliceBotData(self) # type: ignore
     
     @property
@@ -235,7 +249,7 @@ class AliceBot:
     async def call(self, call: AliceBotAPICall[P, R], timeout: float = 10) -> AliceBotAPIResponse[R]:
         '''## 调用API对象'''
         return await call(self, timeout)
-    
+
 
 __all__ = [
     'AliceBot',

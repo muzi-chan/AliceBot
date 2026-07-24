@@ -62,7 +62,7 @@ class AliceBotManager:
     def save_bots(self) -> None:
         for bot in self.bots.values():
             bot.data.save()
-    
+
 
 __all__ = [
     'AliceBotManager',

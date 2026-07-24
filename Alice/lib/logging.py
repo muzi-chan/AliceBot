@@ -173,7 +173,7 @@ class Stream:
         log = self.formatter(record)
         self.io.write(log)
         self.io.flush()
-        
+
 
 class FileStream(Stream):
 

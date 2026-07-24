@@ -12,7 +12,7 @@ from Alice.onebot.event._model import Sender
 
 class _ChildModel(BaseModel):
     model_config = ConfigDict(extra='ignore', arbitrary_types_allowed=True)
-    
+
 
 class ModelShow(AliceBotAPIModel):
     '''# 机型展示'''

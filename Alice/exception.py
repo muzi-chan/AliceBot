@@ -32,7 +32,7 @@ class PluginCircularDependency(AliceException):
 
 class RequireExplicitParam(AliceException):
     '''# 需要显式输入的参数'''
-    
+
 
 
 __all__ = [

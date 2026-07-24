@@ -36,7 +36,7 @@ def _generate_event_tree() -> Node:
     return TREE
 
 _EVENT_TREE = _generate_event_tree()
-del _generate_event_tree    
+del _generate_event_tree
 
 def parse_raw_onebot_event(bot: AliceBot, data: dict[str, Any]) -> Optional[Event]:
     pt = data.get('post_type', None)

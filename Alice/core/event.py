@@ -17,7 +17,7 @@ class AliceEvent(BaseModel):
 
 class AliceCoreClosingEvent(AliceEvent):
     '''# Alice核心关闭事件'''
-    
+
 
 class AliceCoreIntervalEvent(AliceEvent):
     '''# 间歇事件'''

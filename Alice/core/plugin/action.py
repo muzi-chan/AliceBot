@@ -37,8 +37,9 @@ class Action:
         * message: 待发送消息
         * at_sender: 是否@发送者, 仅在群聊中生效
         * bot: 行动主体机器人, 默认解析为事件来源机器人, 如无来源且为 `None` 则抛出异常
-        * user_id: 用户QQ号, 用于发送私聊消息, 默认解析为事件来源用户
         * group_id: 群号, 用于发送群聊消息, 默认解析为事件来源群聊
+        * user_id: 用户QQ号, 用于发送私聊消息, 默认解析为事件来源用户
+        * timeout: 超时时间
         '''
         bot = bot or self.bot
         if bot is None:
@@ -58,13 +59,41 @@ class Action:
         return resp
     
     async def done(self, message: Optional[MessageLike] = None, at_sender:bool = False, bot: Optional[AliceBot] = None, group_id: Optional[int] = None, user_id: Optional[int] = None, timeout: float = 10) -> NoReturn:
+        '''
+        ## 发送消息并结束当前流程
+        
+        ---
+        ### 参数
+        * message: 待发送消息
+        * at_sender: 是否@发送者, 仅在群聊中生效
+        * bot: 行动主体机器人, 默认解析为事件来源机器人, 如无来源且为 `None` 则抛出异常
+        * group_id: 群号, 用于发送群聊消息, 默认解析为事件来源群聊
+        * user_id: 用户QQ号, 用于发送私聊消息, 默认解析为事件来源用户
+        * timeout: 超时时间
+        '''
         if message is not None:
             await self.send(message, at_sender, bot, group_id, user_id, timeout)
         raise ActionDone
     
-    async def recv(self, group_id: Optional[int] = None, user_id: Optional[int] = None, timeout: float = 60) -> Optional[MessageEvent]:
+    async def recv(self, bot: Optional[AliceBot] = None, group_id: Optional[int] = None, user_id: Optional[int] = None, timeout: float = 60) -> Optional[MessageEvent]:
+        '''
+        ## 接收一条消息
+        
+        ---
+        默认接收当前对话下事件来源用户的下一条消息
+        
+        ---
+        ### 参数
+        * bot: 行动主体机器人, 默认解析为事件来源机器人, 如无来源且为 `None` 则抛出异常
+        * group_id: 群号
+        * user_id: 用户QQ号
+        * timeout: 超时时间
+        '''
         from Alice.core.plugin.trigger import Trigger
         
+        BOT = bot or self.bot
+        if BOT is None:
+            raise RequireExplicitParam('bot')
         event = self.tick.event
         group_mode = group_id is not None and user_id is None
         group_id = getattr(event, 'group_id', None) if group_id is None else group_id
@@ -80,6 +109,9 @@ class Action:
         fut: Future[MessageEvent] = Future()
         plugin = self.trigger.plugin
         async def condition(action: Action, tick: Tick, record: TriggerRecord) -> bool:
+            bot = action.bot
+            if bot is None or bot.account != BOT.account:
+                return False
             event = tick.event
             if not isinstance(event, MessageEvent):
                 return False
@@ -99,6 +131,13 @@ class Action:
             trigger.remove()
 
     async def get_reply(self, event: MessageEvent) -> Optional[AliceBotAPIResponse[StoredMessage]]:
+        '''
+        ## 获取回复的消息
+        
+        ---
+        ### 参数
+        * event: 消息事件
+        '''
         if event.reply_id is None:
             return
         call = API.get_msg(message_id=event.reply_id)

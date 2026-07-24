@@ -23,11 +23,9 @@ class TriggerRecord:
     __slots__ = ('__data__', 'trigger')
     
     __data__: dict[Any, Any]
-    trigger: Trigger
     
-    def __init__(self, trigger: Trigger) -> None:
+    def __init__(self) -> None:
         super().__setattr__('__data__', dict())
-        self.trigger = trigger
     
     @property
     def data(self) -> dict[Any, Any]:
@@ -41,7 +39,7 @@ class TriggerRecord:
     
     def __setattr__(self, name: str, value: Any) -> None:
         self.__data__[name] = value
-    
+
 
 class Trigger:
     '''
@@ -67,7 +65,7 @@ class Trigger:
     condition: Optional[ConditionGroup]
     '''## 条件组'''
     handlers: list[Handler]
-    
+
 
     def __init__(self, condition: Optional[Union[Condition, ConditionGroup]] = None, name: Optional[str] = None, desc: Optional[str] = None, plugin: Optional[Plugin] = None, priority: int = 100, block: bool = False) -> None:
         '''
@@ -108,16 +106,18 @@ class Trigger:
             tick.unused_triggers.setdefault(tid, self)
             return
         action = Action(tick, self)
-        record = TriggerRecord(self)
+        record = TriggerRecord()
         try:
             if self.condition is not None and not await self.condition(action, tick, record):
                 tick.unused_triggers.setdefault(tid, self)
                 return
+        except ActionDone:
+            tick.unused_triggers.setdefault(tid, self)
+            return
         except:
             tick.error_triggers.setdefault(tid, self)
             return
         self._last = tick.event.time
-        tick.processing_triggers.setdefault(tid, self)
         try:
             for handler in self.handlers.copy():
                 try:
@@ -126,11 +126,10 @@ class Trigger:
                     break
                 except Exception as e:
                     if not handler.ignore_exception:
-                        raise Exception from e
+                        raise e
         except:
             tick.error_triggers.setdefault(tid, self)
         else:
-            tick.processing_triggers.pop(tid)
             tick.success_triggers.setdefault(tid, self)
         if self.block:
             tick.block_trigger = self
